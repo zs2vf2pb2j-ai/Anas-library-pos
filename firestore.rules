@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signed() { return request.auth != null; }
+    function role() {
+      return signed() && exists(/databases/$(db)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role : 'none';
+    }
+    function isAdmin() { return role() == 'admin'; }
+    function staff() { return role() in ['admin', 'cashier', 'storekeeper']; }
+    function seller() { return role() in ['admin', 'cashier']; }
+    function stocker() { return role() in ['admin', 'storekeeper']; }
+    function only(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    match /users/{uid} {
+      allow get: if signed() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      // أي مستخدم جديد ينشئ حسابه "pending" فقط. أول مدير يُنشأ مرة واحدة فقط (قبل وجود meta/bootstrap)
+      allow create: if signed() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['username', 'role', 'createdAt'])
+        && (request.resource.data.role == 'pending'
+            || (request.resource.data.role == 'admin'
+                && !exists(/databases/$(db)/documents/meta/bootstrap)));
+      allow update: if isAdmin() && only(['role']);
+    }
+    match /meta/bootstrap {
+      allow get: if signed();
+      allow create: if signed() && !exists(/databases/$(db)/documents/meta/bootstrap)
+        && getAfter(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    match /meta/counters { allow read, write: if seller(); }
+
+    // الكتالوج العام للعملاء: بلا تكلفة ولا كميات
+    match /catalog/{id} {
+      allow read: if resource.data.show == true || staff();
+      allow create, delete: if stocker();
+      allow update: if stocker() || (seller() && only(['inStock']));
+    }
+    match /products/{id} {
+      allow read: if staff();
+      allow create: if stocker();
+      allow update: if stocker() || (seller() && only(['stock', 'updatedAt']));
+    }
+    match /movements/{id} {
+      allow read: if staff();
+      allow create: if staff();
+    }
+    match /sales/{id} {
+      allow read: if seller();
+      allow create: if seller()
+        && math.abs(request.resource.data.total - (request.resource.data.subtotal - request.resource.data.discount)) < 0.01
+        && request.resource.data.paid <= request.resource.data.total
+        && request.resource.data.discount >= 0
+        && (request.resource.data.discount == 0 || isAdmin());
+    }
+    match /cash/{id} {
+      allow read: if isAdmin();
+      allow create: if seller();
+    }
+    match /orders/{id} {
+      // العميل ينشئ طلبًا بكود عشوائي طويل، ويقرأه فقط من يعرف الكود
+      allow get: if true;
+      allow list: if staff();
+      allow create: if id.matches('[a-z0-9]{20,40}')
+        && request.resource.data.keys().hasOnly(['name', 'phone', 'method', 'address', 'notes', 'items', 'estimate', 'status', 'day', 'createdAt'])
+        && request.resource.data.status == 'جديد'
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string && request.resource.data.phone.size() <= 20
+        && request.resource.data.items is list && request.resource.data.items.size() > 0 && request.resource.data.items.size() <= 30;
+      allow update: if seller();
+    }
+  }
+}
