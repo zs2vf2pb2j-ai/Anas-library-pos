@@ -52,10 +52,33 @@ service cloud.firestore {
         && request.resource.data.paid <= request.resource.data.total
         && request.resource.data.discount >= 0
         && (request.resource.data.discount == 0 || isAdmin());
+      // المرتجعات تعدّل فقط ما أُرجع والمتبقي على الفاتورة
+      allow update: if seller() && only(['returned', 'remaining']);
+    }
+    match /returns/{id} {
+      allow read, create: if seller();
+    }
+    match /expenses/{id} {
+      allow read, create: if isAdmin();
     }
     match /cash/{id} {
       allow read: if isAdmin();
       allow create: if seller();
+    }
+    match /meta/pcounter { allow read, write: if stocker(); }
+    match /customers/{id} {
+      allow read, create: if seller();
+      allow update: if isAdmin() || (seller() && only(['balance']));
+    }
+    match /suppliers/{id} {
+      allow read: if stocker();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (role() == 'storekeeper' && only(['balance']));
+    }
+    match /purchases/{id} { allow read, create: if stocker(); }
+    match /ledger/{id} {
+      allow read: if isAdmin() || (resource.data.party == 'c' && seller());
+      allow create: if seller() || stocker();
     }
     match /orders/{id} {
       // العميل ينشئ طلبًا بكود عشوائي طويل، ويقرأه فقط من يعرف الكود
