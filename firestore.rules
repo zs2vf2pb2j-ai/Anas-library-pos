@@ -65,6 +65,7 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if seller();
     }
+    match /meta/backup { allow read, write: if isAdmin(); }
     match /meta/pcounter { allow read, write: if stocker(); }
     match /customers/{id} {
       allow read, create: if seller();
