@@ -1,454 +1,131 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>مكتبة أنس للمستلزمات العصرية</title>
-<style>
-:root{--p:#1e3a8a;--b:#f1f5f9;--bd:#e2e8f0;--m:#64748b;--d:#dc2626;--s:#16a34a}
-*{box-sizing:border-box;margin:0;padding:0;font-family:Cairo,Tahoma,Arial,sans-serif}
-body{background:var(--b);color:#0f172a;font-size:15px}
-button,input,select,textarea{font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid var(--bd);background:#fff}
-button{background:var(--p);color:#fff;border:0;cursor:pointer;font-weight:700}
-button:disabled{opacity:.5}button.o{background:#fff;color:var(--p);border:1px solid var(--p)}button.r{background:var(--d)}
-input,select,textarea{width:100%;margin:4px 0}
-.top{background:var(--p);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;top:0;z-index:30;flex-wrap:wrap}
-.top button{background:#ffffff26}
-.wrap{padding:14px;max-width:1100px;margin:0 auto;width:100%}
-.card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.bg{background:#dbeafe;color:#1d4ed8;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}
-.lay{display:flex}#side{width:230px;background:#1e293b;min-height:calc(100vh - 52px);flex-shrink:0}
-#side a{display:block;padding:12px 18px;color:#cbd5e1;cursor:pointer}#side a.on{background:#0f172a;color:#fff;border-right:4px solid #3b82f6}
-body.hide #side{display:none}#bd{display:none}
-@media print{body>*:not(#mo){display:none!important}.mo{position:static;background:none;padding:0}.mo button{display:none}}
-@media(max-width:900px){#side{position:fixed;top:52px;right:0;bottom:0;z-index:40;transform:translateX(100%);transition:.25s}
-body.so #side{transform:none}body.so #bd{display:block;position:fixed;inset:0;background:#0008;z-index:35}}
-.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
-#tt{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;z-index:99}
-#tt.e{background:var(--d)}#off{display:none;background:var(--d);color:#fff;text-align:center;padding:6px}
-.mo{position:fixed;inset:0;background:#0009;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}.mo>div{background:#fff;border-radius:12px;padding:16px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام مكتبة أنس للمبيعات والمخزون والحسابات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase Modular SDK v10 -->
+    <script type="module" src="firebase-init.js"></script>
 </head>
 <body>
-<div id="off">لا يوجد اتصال بالإنترنت — لن تُحفظ العمليات</div>
-<div id="app"></div>
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,orderBy,limit,getDocs,runTransaction,writeBatch,serverTimestamp,onSnapshot,getAggregateFromServer,sum}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const app0=initializeApp({apiKey:"AIzaSyBhfLDZX5DkTt61icaZ8lXbMQ0cNJA46xE",authDomain:"anas-library-pos.firebaseapp.com",projectId:"anas-library-pos",storageBucket:"anas-library-pos.firebasestorage.app",messagingSenderId:"38243913470",appId:"1:38243913470:web:3b0df4ec9d75371d59dfaf"});
-const auth=getAuth(app0),db=getFirestore(app0);
-const $=s=>document.querySelector(s),DOM='anas-library.app';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const r2=n=>Math.round(n*100)/100,money=n=>Number(n||0).toFixed(2)+' ج.م';
-const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Africa/Cairo'});
-const uuid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
-const token=()=>[...crypto.getRandomValues(new Uint8Array(24))].map(b=>(b%36).toString(36)).join('');
-function toast(m,e){$('#tt')?.remove();const d=document.createElement('div');d.id='tt';d.className=e?'e':'';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),3500)}
-function modal(h){$('#mo')?.remove();const d=document.createElement('div');d.id='mo';d.className='mo';d.innerHTML='<div>'+h+'</div>';d.onclick=e=>{if(e.target===d)d.remove()};document.body.append(d)}
-const closeM=()=>$('#mo')?.remove();
-addEventListener('offline',()=>$('#off').style.display='block');addEventListener('online',()=>$('#off').style.display='none');
-const errMsg=e=>({'auth/email-already-in-use':'اسم المستخدم مستخدم بالفعل','auth/invalid-credential':'بيانات الدخول غير صحيحة','auth/too-many-requests':'محاولات كثيرة، حاول لاحقًا','permission-denied':'غير مصرح لك بهذه العملية'}[e.code]||e.message||'حدث خطأ');
-const R={admin:'المدير العام',cashier:'كاشير',storekeeper:'أمين مخزن',pending:'بانتظار التفعيل'};
-let pcart=[],pKey=uuid(),sups=[],custs=[],sl2=[],pT=0,me=null,signing=false,page='dash',prods=[],cart=[],posKey=uuid(),prev=-1,unsub=null;
-const wrap=(fn)=>async(...a)=>{try{return await fn(...a)}catch(e){console.error(e);toast(errMsg(e),1)}};
+    <!-- Top Mode Bar -->
+    <div class="mode-bar no-print">
+        <div>
+            <strong>مكتبة أنس للمستلزمات العصرية</strong> — 
+            <span id="cloudStatusText" style="color:#38bdf8">جاري الاتصال بقاعدة بيانات Firebase...</span>
+        </div>
+        <div class="mode-buttons">
+            <button class="mode-btn active" id="btnModeAdmin" onclick="switchAppMode('admin')">🖥️ تطبيق الإدارة والكاشير</button>
+            <button class="mode-btn" id="btnModeCustomer" onclick="switchAppMode('customer')">🛍️ تطبيق العملاء (المتجر الإلكتروني)</button>
+        </div>
+    </div>
 
-/* ===================== المتجر (تطبيق العملاء) ===================== */
-let cat=[],sc=[],q='';
-async function store(){
- $('#app').innerHTML=`<header class="top"><b>📚 مكتبة أنس للمستلزمات العصرية</b><span><button onclick="sv('list')">🏠 المنتجات</button> <button onclick="sv('track')">📦 متابعة طلبي</button> <button onclick="sv('cart')">🛒 (<span id="cc">0</span>)</button></span></header><main id="v" class="wrap"></main>`;
- try{cat=(await getDocs(query(collection(db,'catalog'),where('show','==',true)))).docs.map(d=>({id:d.id,...d.data()}))}catch(e){toast('تعذر تحميل المنتجات — تحقق من الاتصال',1)}
- sv('list');
-}
-function cc(){$('#cc').textContent=sc.reduce((a,l)=>a+l.qty,0)}
-function sv(v,x){
- const V=$('#v');
- if(v==='list'){V.innerHTML=`<input id="sq" placeholder="🔍 ابحث عن منتج" value="${esc(q)}" oninput="q=this.value;sl()"><div class="grid" id="sg"></div>`;sl()}
- if(v==='cart'){
-  const t=sc.reduce((a,l)=>a+l.qty*(cat.find(c=>c.id===l.id)?.price||0),0);
-  V.innerHTML=`<div class="card"><h3>سلة المشتريات</h3>${sc.map((l,i)=>{const c=cat.find(z=>z.id===l.id);return`<div style="display:flex;gap:8px;align-items:center;margin:6px 0"><span style="flex:1">${esc(c.name)} — ${money(c.price)}</span><input type="number" min="1" max="99" value="${l.qty}" style="width:70px" onchange="sq2(${i},this.value)"><button class="r" onclick="sd(${i})">✕</button></div>`}).join('')||'السلة فارغة'}
-  <p><b>الإجمالي المتوقع: ${money(t)}</b><br><small>السعر النهائي تعتمده المكتبة عند التجهيز.</small></p></div>
-  ${sc.length?`<div class="card"><h3>بيانات الطلب</h3><input id="cn" maxlength="80" placeholder="الاسم"><input id="cp" maxlength="20" inputmode="tel" placeholder="رقم الهاتف"><select id="cm"><option>استلام من المكتبة</option><option>توصيل</option></select><input id="ca" maxlength="200" placeholder="العنوان (للتوصيل)"><textarea id="cx" maxlength="300" placeholder="ملاحظات (اختياري)"></textarea><p><small>الدفع عند الاستلام.</small></p><button id="sb" onclick="send()">إرسال الطلب</button></div>`:''}`}
- if(v==='track')V.innerHTML=`<div class="card"><h3>متابعة الطلب</h3><input id="tk" placeholder="أدخل كود الطلب الذي ظهر لك"><button onclick="trk()">بحث</button><div id="tr"></div></div>`;
- if(v==='done'){sc=[];cc();V.innerHTML=`<div class="card" style="text-align:center"><h2>🎉 تم إرسال طلبك</h2><p>احتفظ بهذا الكود لمتابعة الطلب:</p><h3 style="direction:ltr;user-select:all">${esc(x)}</h3></div>`}
- cc();
-}
-function sl(){const s=q.trim().toLowerCase();$('#sg').innerHTML=cat.filter(c=>!s||c.name.toLowerCase().includes(s)).map(c=>`<div class="card"><b>${esc(c.name)}</b><div>${money(c.price)}</div><small>${esc(c.desc||'')}</small><br>${c.inStock?`<button onclick="sa('${esc(c.id)}')">إضافة للسلة</button>`:'<span class="bg" style="background:#fee2e2;color:#b91c1c">غير متاح</span>'}</div>`).join('')||'<p>لا توجد منتجات</p>'}
-function sa(id){const l=sc.find(x=>x.id===id);l?l.qty=Math.min(99,l.qty+1):sc.push({id,qty:1});cc();toast('أُضيف إلى السلة')}
-function sq2(i,v){sc[i].qty=Math.max(1,Math.min(99,parseInt(v)||1));sv('cart')}
-function sd(i){sc.splice(i,1);sv('cart')}
-const send=wrap(async()=>{
- const name=$('#cn').value.trim(),phone=$('#cp').value.trim(),method=$('#cm').value,address=$('#ca').value.trim(),notes=$('#cx').value.trim();
- if(!name||!/^[0-9+\s-]{8,20}$/.test(phone))return toast('أدخل الاسم ورقم هاتف صحيحًا',1);
- if(method==='توصيل'&&!address)return toast('أدخل عنوان التوصيل',1);
- const items=sc.map(l=>{const c=cat.find(z=>z.id===l.id);return{id:c.id,name:c.name,qty:l.qty,price:c.price}});
- const id=token(),b=$('#sb');b.disabled=true;
- try{await setDoc(doc(db,'orders',id),{name,phone,method,address,notes,items,estimate:r2(items.reduce((a,i)=>a+i.qty*i.price,0)),status:'جديد',day:day(),createdAt:serverTimestamp()});sv('done',id)}
- finally{b.disabled=false}
-});
-const trk=wrap(async()=>{
- const id=$('#tk').value.trim().toLowerCase(),o=id.length>=20?(await getDoc(doc(db,'orders',id))).data():null;
- $('#tr').innerHTML=o?`<div class="card"><span class="bg">${esc(o.status)}</span><p>${o.items.map(i=>esc(i.name)+' ×'+Number(i.qty)).join('، ')}</p><b>${money(o.estimate)}</b>${o.reason?'<p>السبب: '+esc(o.reason)+'</p>':''}${o.invoiceNo?'<p>رقم الفاتورة: '+esc(o.invoiceNo)+'</p>':''}</div>`:'<p style="color:var(--d)">لم يُعثر على الطلب</p>';
-});
+    <!-- ==========================================
+         1. ADMIN & POS APPLICATION
+    =========================================== -->
+    <div id="adminApp">
+        <!-- Login & First Setup Screen -->
+        <div id="adminLoginScreen" class="login-wrapper">
+            <div class="login-card">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:40px;">📚</div>
+                    <h2 style="color:var(--primary); font-size:21px;">نظام مكتبة أنس السحابي</h2>
+                    <p style="color:var(--text-muted); font-size:13px;">إدارة المبيعات، المخزون، الحسابات، والمتجر الإلكتروني</p>
+                </div>
 
-/* ===================== تطبيق الإدارة ===================== */
-function authView(mode){
- $('#app').innerHTML=`<div class="wrap" style="max-width:400px;margin-top:40px"><div class="card"><h2 style="text-align:center">📚 نظام مكتبة أنس</h2><div style="display:flex;gap:8px;margin:12px 0"><button class="${mode==='in'?'':'o'}" style="flex:1" onclick="authView('in')">دخول</button><button class="${mode==='up'?'':'o'}" style="flex:1" onclick="authView('up')">إنشاء حساب</button></div>
- <input id="u" autocomplete="username" placeholder="اسم المستخدم (إنجليزي)" style="direction:ltr"><input id="p" type="password" autocomplete="${mode==='in'?'current-password':'new-password'}" placeholder="كلمة المرور (8 أحرف على الأقل)" style="direction:ltr">
- ${mode==='up'?'<small>أول حساب يُنشأ في النظام يصبح المدير العام، وبقية الحسابات تنتظر تفعيل المدير.</small>':''}
- <button style="width:100%;margin-top:10px" id="ab" onclick="${mode==='in'?'login()':'signup()'}">${mode==='in'?'دخول':'إنشاء الحساب'}</button></div></div>`;
-}
-function creds(){
- const u=$('#u').value.trim().toLowerCase(),p=$('#p').value;
- if(!/^[a-z0-9_.]{3,20}$/.test(u)){toast('اسم المستخدم: 3–20 حرفًا إنجليزيًا أو أرقامًا أو _ .',1);return null}
- if(p.length<8){toast('كلمة المرور 8 أحرف على الأقل',1);return null}
- return[u,p];
-}
-const login=wrap(async()=>{const c=creds();if(!c)return;$('#ab').disabled=true;try{await signInWithEmailAndPassword(auth,c[0]+'@'+DOM,c[1])}catch(e){$('#ab').disabled=false;throw e}});
-const signup=wrap(async()=>{
- const c=creds();if(!c)return;$('#ab').disabled=true;signing=true;
- try{
-  const u=(await createUserWithEmailAndPassword(auth,c[0]+'@'+DOM,c[1])).user;
-  let first=false;try{first=!(await getDoc(doc(db,'meta','bootstrap'))).exists()}catch{}
-  const row={username:c[0],role:first?'admin':'pending',createdAt:serverTimestamp()},b=writeBatch(db);
-  b.set(doc(db,'users',u.uid),row);if(first)b.set(doc(db,'meta','bootstrap'),{by:c[0],at:serverTimestamp()});
-  try{await b.commit()}catch(e){if(!first)throw e;await setDoc(doc(db,'users',u.uid),{...row,role:'pending'})}
- }catch(e){$('#ab').disabled=false;throw e}finally{signing=false}
- boot(auth.currentUser);
-});
-async function boot(u){
- if(unsub){unsub();unsub=null}
- if(!u)return authView('in');
- const s=await getDoc(doc(db,'users',u.uid)).catch(()=>null);
- me=s&&s.exists()?{uid:u.uid,...s.data()}:null;
- if(!me||!['admin','cashier','storekeeper'].includes(me.role)){
-  $('#app').innerHTML=`<div class="wrap" style="max-width:400px;margin-top:40px"><div class="card" style="text-align:center"><h3>حسابك بانتظار التفعيل</h3><p>اطلب من المدير العام تحديد صلاحياتك ثم أعد الدخول.</p><button onclick="out()">خروج</button></div></div>`;return}
- shell();go('dash');
-}
-const MENU=[['dash','لوحة التحكم',['admin','cashier','storekeeper']],['pos','نقطة البيع POS',['admin','cashier']],['sales','فواتير المبيعات والمرتجعات',['admin','cashier']],['orders','الطلبات الخارجية',['admin','cashier']],['prods','المنتجات والمخزون',['admin','storekeeper']],['users','المستخدمون والصلاحيات',['admin']],['pur','المشتريات',['admin','storekeeper']],['sup','الموردون',['admin']],['cust','العملاء والتحصيلات',['admin','cashier']],['expn','المصروفات',['admin']],['rep','التقارير',['admin']],['bak','النسخ الاحتياطي',['admin']],['cashp','الخزينة',['admin']],['imp','استيراد المنتجات',['admin']]];
-function shell(){
- $('#app').innerHTML=`<header class="top"><span><button onclick="tg()">☰</button> <b>مكتبة أنس</b> <small id="pg"></small></span><span><small>${esc(me.username)} — ${R[me.role]}</small> <button onclick="go('orders')">🔔 <b id="nb">0</b></button> <button onclick="out()">خروج</button></span></header>
- <div class="lay"><div id="bd" onclick="tg()"></div><aside id="side">${MENU.filter(m=>m[2].includes(me.role)).map(m=>`<a id="n-${m[0]}" onclick="go('${m[0]}')">${m[1]}</a>`).join('')}</aside><main id="v" class="wrap"></main></div>`;
- document.body.classList.toggle('hide',false);document.body.classList.remove('so');
- if(me.role!=='storekeeper'){prev=-1;unsub=onSnapshot(query(collection(db,'orders'),where('status','==','جديد')),s=>{const n=$('#nb');if(n)n.textContent=s.size;if(prev>=0&&s.size>prev)toast('🔔 وصل طلب خارجي جديد');prev=s.size},()=>{})}
-}
-function tg(){document.body.classList.toggle(innerWidth<=900?'so':'hide')}
-function go(p){
- const m=MENU.find(x=>x[0]===p);if(!m||!m[2].includes(me.role))return toast('⛔ ليس لديك صلاحية',1);
- page=p;document.querySelectorAll('#side a').forEach(a=>a.classList.toggle('on',a.id==='n-'+p));$('#pg').textContent='/ '+m[1];
- document.body.classList.remove('so');$('#v').innerHTML='جارٍ التحميل…';({dash,pos,orders,prods:prodsPage,users,imp,sales,pur,sup:()=>partyPage('suppliers'),cust:()=>partyPage('customers'),expn:expnPage,cashp:cashPage,rep:repPage,bak:bakPage})[p]().catch(e=>toast(errMsg(e),1));
-}
-const out=()=>signOut(auth);
+                <!-- First Time Admin Setup -->
+                <div id="firstAdminSetupBox" class="hidden">
+                    <div class="alert-info">
+                        <strong>تهيئة النظام لأول مرة:</strong> قاعدة البيانات فارغة حالياً. أنشئ حساب المدير العام الأول للبدء.
+                    </div>
+                    <div class="form-group"><label>الاسم الكامل للمدير</label><input type="text" id="setupAdminName" placeholder="م. أحمد (أبو أنس)"></div>
+                    <div class="form-group"><label>اسم المستخدم للدخول</label><input type="text" id="setupAdminUser" placeholder="admin"></div>
+                    <div class="form-group"><label>كلمة المرور</label><input type="password" id="setupAdminPass" placeholder="••••••"></div>
+                    <button class="btn btn-primary w-100" onclick="createFirstAdmin()">إنشاء حساب المدير العام والدخول</button>
+                </div>
 
-async function loadProds(f){if(f||!prods.length||Date.now()-pT>3e5){prods=(await getDocs(collection(db,'products'))).docs.map(d=>({id:d.id,...d.data()}));pT=Date.now()}}
-async function dash(){
- const Q=c=>getDocs(query(collection(db,c),where('day','==',day()))).catch(()=>null);
- const AG=k=>getAggregateFromServer(collection(db,k),{t:sum('balance')}).then(r=>r.data().t||0).catch(()=>null),adm=me.role==='admin';
- const [sa,rt,ex,pr,dc,ds]=await Promise.all([Q('sales'),Q('returns'),adm?Q('expenses'):null,loadProds().then(()=>prods).catch(()=>null),adm?AG('customers'):null,adm?AG('suppliers'):null]);
- let t=0,cg=0,rv=0,rc=0,xp=0;
- sa?.forEach(d=>{const x=d.data();t+=x.total;x.items.forEach(i=>cg+=i.cost*i.qty)});
- rt?.forEach(d=>{const r=d.data();rv+=r.value;r.items.forEach(i=>rc+=i.cost*i.qty)});
- ex?.forEach(d=>xp+=d.data().amount);
- let low=0,out0=0;pr?.forEach(p=>{if(!p.active)return;if(p.stock<=0)out0++;else if(p.stock<=p.minStock)low++});
- const net=t-rv,cost=cg-rc,gp=net-cost,C=(a,b)=>`<div class="card"><small>${a}</small><h3>${b}</h3></div>`;
- $('#v').innerHTML=`<div class="grid">${sa?C('صافي مبيعات اليوم (بعد الخصم والمرتجعات)',money(net))+C('عدد فواتير اليوم',sa.size)+C('تكلفة البضاعة المباعة',money(cost))+C('مجمل الربح',money(gp)):''}${ex?C('مصروفات اليوم',money(xp))+C('صافي الربح التقديري',money(gp-xp)):''}${dc!=null?C('مستحق على العملاء',money(dc))+C('مستحق للموردين',money(ds)):''}${pr?C('منتجات منخفضة المخزون',low)+C('منتجات غير متاحة',out0)+C('إجمالي المنتجات',pr.length):''}</div><p><small>مجمل الربح = صافي المبيعات − تكلفة البضاعة المباعة. صافي الربح التقديري = مجمل الربح − المصروفات. وكلها أرقام اليوم فقط.</small></p>`;
-}
+                <!-- Standard Login -->
+                <div id="standardLoginBox">
+                    <div class="form-group"><label>اسم المستخدم</label><input type="text" id="loginUsername" placeholder="admin"></div>
+                    <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••" onkeydown="if(event.key==='Enter') handleLogin()"></div>
+                    <button class="btn btn-primary w-100" style="margin-top:8px;" onclick="handleLogin()">تسجيل الدخول</button>
+                    
+                    <div style="margin-top:18px; padding-top:14px; border-top:1px dashed var(--border-color); text-align:center;">
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">للاختبار السريع وتعبئة الأقسام والمنتجات الافتراضية:</p>
+                        <button class="btn btn-outline btn-sm" onclick="seedTestDataToFirebase()">⚡ تهيئة بيانات اختبار سحابية (admin / 123456)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-/* منطق البيع الموحد: يُستخدم في نقطة البيع وفي تحويل الطلبات (معاملة واحدة ذرية) */
-async function sellTx(t,{key,items,disc=0,paidIn=Infinity,custId='',custName=''}){
- const sr=doc(db,'sales',key),ex=await t.get(sr);if(ex.exists())return ex.data().invoiceNo;
- const m={};items.forEach(i=>m[i.id]=(m[i.id]||0)+i.qty);
- const cr=doc(db,'meta','counters'),cs=await t.get(cr),n=(cs.exists()?cs.data().sales:1000)+1,L=[];let sub=0;
- for(const[id,qty]of Object.entries(m)){
-  if(!Number.isInteger(qty)||qty<1)throw Error('كمية غير صحيحة');
-  const r=doc(db,'products',id),s=await t.get(r),p=s.data();
-  if(!s.exists()||!p.active)throw Error('منتج غير متاح');
-  if(p.stock<qty)throw Error('الكمية غير كافية: '+p.name);
-  L.push({r,p,qty});sub+=p.sellPrice*qty;
- }
- sub=r2(sub);if(disc<0||disc>sub)throw Error('الخصم غير صحيح');
- const total=r2(sub-disc),paid=r2(Math.min(paidIn,total)),rem=r2(total-paid),no='INV-'+n;
- if(rem>0&&!custId)throw Error('البيع الآجل يتطلب اختيار عميل مسجل');
- let cd=null;if(rem>0){cd=(await t.get(doc(db,'customers',custId))).data();if(!cd)throw Error('العميل غير موجود')}
- t.set(cr,{sales:n},{merge:true});
- t.set(sr,{invoiceNo:no,day:day(),items:L.map(x=>({id:x.r.id,name:x.p.name,qty:x.qty,cost:x.p.costPrice,price:x.p.sellPrice})),subtotal:sub,discount:disc,total,paid,remaining:rem,customer:custName,custId,by:me.username,createdAt:serverTimestamp()});
- for(const x of L){
-  t.update(x.r,{stock:x.p.stock-x.qty,updatedAt:serverTimestamp()});
-  t.update(doc(db,'catalog',x.r.id),{inStock:x.p.stock-x.qty>0});
-  t.set(doc(collection(db,'movements')),{pid:x.r.id,name:x.p.name,type:'صرف مبيعات',qty:-x.qty,ref:no,by:me.username,createdAt:serverTimestamp()});
- }
- if(paid>0)t.set(doc(collection(db,'cash')),{type:'مبيعات',amount:paid,dir:'in',ref:no,by:me.username,createdAt:serverTimestamp()});
- if(rem>0){t.update(doc(db,'customers',custId),{balance:r2(cd.balance+rem)});t.set(doc(collection(db,'ledger')),{party:'c',pid:custId,type:'فاتورة آجلة',amount:rem,ref:no,day:day(),by:me.username,createdAt:serverTimestamp()})}
- return no;
-}
+        <!-- Admin Workspace -->
+        <div id="adminWorkspace" class="hidden">
+            <header class="admin-topbar">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="menu-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="فتح/إغلاق القائمة">☰</button>
+                    <div>
+                        <div style="font-weight:800; color:var(--primary); font-size:16px;" id="topbarStoreName">مكتبة أنس للمستلزمات العصرية</div>
+                        <div style="font-size:11.5px; color:var(--text-muted);" id="currentPageBreadcrumb">لوحة التحكم</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="btn btn-outline btn-sm" onclick="navigateAdmin('external_orders')">
+                        🔔 الطلبات <span class="badge badge-new" id="topbarNewOrdersBadge">0</span>
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="navigateAdmin('notifications')">
+                        ⚠️ التنبيهات <span class="badge badge-cancel" id="topbarAlertsBadge">0</span>
+                    </button>
+                    <div style="text-align:left; font-size:12.5px; border-right:1px solid var(--border-color); padding-right:10px;">
+                        <div style="font-weight:700;" id="currentUserDisplay">المستخدم</div>
+                        <div style="color:var(--secondary); font-size:11px;" id="currentRoleDisplay">الدور</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="logoutAdmin()">خروج</button>
+                </div>
+            </header>
 
-/* نقطة البيع */
-async function pos(){
- await loadProds();custs=(await getDocs(collection(db,'customers'))).docs.map(d=>({id:d.id,...d.data()}));
- $('#v').innerHTML=`<div class="card"><input id="ps" placeholder="بحث بالاسم أو الكود أو الباركود (Enter لإضافة المطابق)" oninput="pl()" onkeydown="if(event.key==='Enter')pe()"><div id="pl" class="grid"></div></div>
- <div class="card"><h3>الفاتورة</h3><div id="pc"></div><input id="disc" type="number" min="0" placeholder="الخصم" ${me.role==='admin'?'':'disabled'} oninput="pt()"><input id="paid" type="number" min="0" placeholder="المدفوع (اتركه فارغًا للدفع الكامل)"><select id="cust"><option value="">عميل نقدي (بدون حساب)</option>${custs.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select><h3 id="tt2"></h3><button id="pay" onclick="checkout()">إتمام البيع</button></div>`;
- pl();pc();
-}
-function pl(){const s=($('#ps').value||'').trim().toLowerCase();$('#pl').innerHTML=prods.filter(p=>p.active&&(!s||[p.name,p.sku,p.barcode].some(x=>String(x||'').toLowerCase().includes(s)))).slice(0,24).map(p=>`<button class="o" onclick="pa('${esc(p.id)}')" ${p.stock<=0?'disabled':''}>${esc(p.name)}<br><small>${money(p.sellPrice)} • متاح ${p.stock}</small></button>`).join('')}
-function pe(){const s=$('#ps').value.trim().toLowerCase(),p=prods.find(x=>x.active&&[x.barcode,x.sku].some(v=>v&&String(v).toLowerCase()===s));if(p){pa(p.id);$('#ps').value='';pl()}}
-function pa(id){const l=cart.find(x=>x.id===id);l?l.qty++:cart.push({id,qty:1});pc()}
-function pc(){$('#pc').innerHTML=cart.map((l,i)=>{const p=prods.find(x=>x.id===l.id);return`<div style="display:flex;gap:8px;align-items:center;margin:4px 0"><span style="flex:1">${esc(p.name)} — ${money(p.sellPrice)}</span><input type="number" min="1" style="width:70px" value="${l.qty}" onchange="pq(${i},this.value)"><button class="r" onclick="cart.splice(${i},1);pc()">✕</button></div>`}).join('')||'<small>لم تُضف أصناف</small>';pt()}
-function pq(i,v){cart[i].qty=Math.max(1,parseInt(v)||1);pt()}
-function pt(){const s=cart.reduce((a,l)=>a+l.qty*prods.find(x=>x.id===l.id).sellPrice,0),d=+($('#disc')?.value)||0;$('#tt2').textContent='الإجمالي: '+money(Math.max(0,s-d))}
-const checkout=wrap(async()=>{
- if(!cart.length)return toast('أضف صنفًا واحدًا على الأقل',1);
- const b=$('#pay');b.disabled=true;
- try{
-  const disc=me.role==='admin'?(+$('#disc').value||0):0,pv=$('#paid').value,sel=$('#cust'),custId=sel.value,custName=custId?sel.options[sel.selectedIndex].text:'';
-  const no=await runTransaction(db,t=>sellTx(t,{key:posKey,items:cart.map(l=>({id:l.id,qty:l.qty})),disc,paidIn:pv===''?Infinity:+pv,custId,custName}));
-  cart.forEach(l=>{const p=prods.find(x=>x.id===l.id);if(p)p.stock-=l.qty});cart.length=0;posKey=uuid();toast('✅ تم حفظ الفاتورة '+no);await pos();
- }finally{b.disabled=false}
-});
+            <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebarMobile()"></div>
+            <div class="admin-container">
+                <aside class="admin-sidebar" id="adminSidebar">
+                    <div class="sidebar-header-mobile">
+                        <span>القائمة الرئيسية</span>
+                        <button class="btn btn-sm btn-danger" onclick="closeSidebarMobile()">✕</button>
+                    </div>
+                    <ul class="nav-list" id="adminNavList"></ul>
+                </aside>
+                <main class="admin-main" id="adminMainContent"></main>
+            </div>
+        </div>
+    </div>
 
-/* الطلبات الخارجية */
-const NEXT={'جديد':['قيد المراجعة','مقبول','مرفوض'],'قيد المراجعة':['مقبول','مرفوض'],'مقبول':['قيد التجهيز','ملغى'],'قيد التجهيز':['جاهز للاستلام','ملغى'],'جاهز للاستلام':['خرج للتوصيل','ملغى'],'خرج للتوصيل':['ملغى']};
-async function orders(){
- const s=await getDocs(query(collection(db,'orders'),orderBy('createdAt','desc'),limit(50)));
- $('#v').innerHTML=s.docs.map(d=>{const o=d.data(),id=esc(d.id);return`<div class="card"><b>${id.slice(0,8)}…</b> <span class="bg">${esc(o.status)}</span><div>${esc(o.name)} — ${esc(o.phone)} — ${esc(o.method)} ${esc(o.address)}</div><small>${(o.items||[]).map(i=>esc(i.name)+' ×'+Number(i.qty)).join('، ')}</small><div>تقدير العميل: ${money(o.estimate)} ${o.notes?'— '+esc(o.notes):''}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${(NEXT[o.status]||[]).map(n=>`<button class="o" onclick="ost('${id}','${n}')">${n}</button>`).join('')}${['مقبول','قيد التجهيز','جاهز للاستلام','خرج للتوصيل'].includes(o.status)?`<button onclick="ocv('${id}')">✅ اعتماد البيع وإصدار فاتورة</button>`:''}${o.invoiceNo?'<span class="bg">'+esc(o.invoiceNo)+'</span>':''}</div></div>`}).join('')||'<div class="card">لا توجد طلبات</div>';
-}
-const ost=wrap(async(id,s)=>{
- const f={status:s,by:me.username,updatedAt:serverTimestamp()};
- if(['مرفوض','ملغى'].includes(s)){const r=prompt('سبب الرفض/الإلغاء:');if(!r)return;f.reason=r.slice(0,200)}
- await updateDoc(doc(db,'orders',id),f);orders();
-});
-const ocv=wrap(async id=>{
- if(!confirm('اعتماد البيع وخصم المخزون؟'))return;
- await runTransaction(db,async t=>{
-  const or=doc(db,'orders',id),o=(await t.get(or)).data();
-  if(!o||o.invoiceNo||!['مقبول','قيد التجهيز','جاهز للاستلام','خرج للتوصيل'].includes(o.status))throw Error('لا يمكن اعتماد هذا الطلب');
-  const no=await sellTx(t,{key:'ord-'+id,items:o.items.map(i=>({id:i.id,qty:Number(i.qty)})),custName:o.name});
-  t.update(or,{status:'مكتمل',invoiceNo:no,updatedAt:serverTimestamp()});
- });
- toast('✅ تم إصدار الفاتورة وتحديث المخزون');orders();
-});
+    <!-- ==========================================
+         2. CUSTOMER STOREFRONT APPLICATION
+    =========================================== -->
+    <div id="customerApp" class="hidden">
+        <div class="store-header">
+            <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h1 style="font-size:24px; font-weight:800;" id="storeFrontTitle">📚 مكتبة أنس للمستلزمات العصرية</h1>
+                    <p style="font-size:13.5px; opacity:0.9;" id="storeFrontSub">اطلب أونلاين واستلم من المكتبة أو التوصيل — الدفع عند الاستلام</p>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-outline" onclick="renderStoreView('catalog')">🏠 المنتجات</button>
+                    <button class="btn btn-outline" onclick="renderStoreView('track')">📦 متابعة طلبي</button>
+                    <button class="btn btn-warning" onclick="renderStoreView('cart')">🛒 السلة (<span id="storeCartCount">0</span>)</button>
+                </div>
+            </div>
+        </div>
+        <div class="store-container" id="storeMainContainer"></div>
+    </div>
 
-/* المنتجات والمخزون */
-async function prodsPage(f){
- await loadProds(f);
- const mv=(await getDocs(query(collection(db,'movements'),orderBy('createdAt','desc'),limit(15)))).docs.map(d=>d.data());
- $('#v').innerHTML=`<div class="card"><button onclick="pf()">➕ منتج جديد</button> <button class="o" onclick="exp()">📥 تصدير CSV</button></div><div class="card tw"><table><tr><th>المنتج</th><th>الكود</th><th>الرصيد</th><th>التكلفة</th><th>البيع</th><th>الحالة</th><th></th></tr>${prods.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.sku)}</td><td>${p.stock}</td><td>${money(p.costPrice)}</td><td>${money(p.sellPrice)}</td><td>${p.active?'نشط':'موقوف'}${p.show?' • بالمتجر':''}</td><td><button class="o" onclick="pf('${esc(p.id)}')">تعديل</button> <button class="o" onclick="adj('${esc(p.id)}')">تسوية</button></td></tr>`).join('')}</table></div><div class="card tw"><h3>آخر حركات المخزون</h3><table>${mv.map(m=>`<tr><td>${esc(m.name||m.pid)}</td><td>${esc(m.type)}</td><td>${Number(m.qty)}</td><td>${esc(m.ref)}</td><td>${esc(m.by)}</td></tr>`).join('')}</table></div>`;
-}
-function pf(id){
- const p=prods.find(x=>x.id===id)||{},v=k=>esc(p[k]??'');
- modal(`<h3>${id?'تعديل':'إضافة'} منتج</h3><input id="f1" placeholder="الاسم" maxlength="100" value="${v('name')}"><input id="f2" placeholder="الكود SKU (إنجليزي/أرقام)" ${id?'disabled':''} value="${v('sku')}"><input id="f3" placeholder="الباركود" value="${v('barcode')}"><input id="f4" type="number" min="0" step="0.01" placeholder="سعر الشراء" value="${v('costPrice')}"><input id="f5" type="number" min="0" step="0.01" placeholder="سعر البيع" value="${v('sellPrice')}">${id?'':'<input id="f6" type="number" min="0" placeholder="الرصيد الافتتاحي" value="0">'}<input id="f7" type="number" min="0" placeholder="حد التنبيه" value="${p.minStock??5}"><input id="f8" placeholder="القسم" value="${v('cat')}"><textarea id="f9" maxlength="300" placeholder="الوصف">${v('desc')}</textarea><label><input type="checkbox" id="fa" style="width:auto" ${p.active!==false?'checked':''}> نشط</label> <label><input type="checkbox" id="fb" style="width:auto" ${p.show?'checked':''}> يظهر للعملاء</label><div style="margin-top:10px"><button onclick="sp('${id||''}')">حفظ</button> <button class="o" onclick="closeM()">إلغاء</button></div>`);
-}
-const sp=wrap(async id=>{
- const g=i=>$('#'+i)?.value.trim(),name=g('f1'),sku=id?prods.find(x=>x.id===id).sku:g('f2'),cost=+g('f4')||0,price=+g('f5')||0,min=parseInt(g('f7'))||0,st=parseInt(g('f6'))||0;
- if(!name||!/^[A-Za-z0-9_-]{2,30}$/.test(sku)||price<=0||cost<0||st<0)return toast('تحقق من الاسم والكود (إنجليزي) والأسعار',1);
- const pid=id||sku.toLowerCase(),active=$('#fa').checked,show=$('#fb').checked;
- const base={name,sku,barcode:g('f3'),costPrice:cost,sellPrice:price,minStock:min,cat:g('f8'),desc:g('f9'),active,show,updatedAt:serverTimestamp()};
- await runTransaction(db,async t=>{
-  const r=doc(db,'products',pid),s=await t.get(r);
-  if(!id&&s.exists())throw Error('كود المنتج مستخدم لمنتج آخر');
-  const stock=id?s.data().stock:st;
-  if(id)t.update(r,base);else{t.set(r,{...base,stock,createdAt:serverTimestamp()});if(stock>0)t.set(doc(collection(db,'movements')),{pid,name,type:'رصيد افتتاحي',qty:stock,ref:sku,by:me.username,createdAt:serverTimestamp()})}
-  t.set(doc(db,'catalog',pid),{name,price,desc:base.desc,cat:base.cat,show:show&&active,inStock:stock>0});
- });
- closeM();toast('تم حفظ المنتج');prodsPage(1);
-});
-const adj=wrap(async id=>{
- const d=parseInt(prompt('الكمية (موجبة للإضافة وسالبة للصرف):')),why=(prompt('سبب التسوية (إلزامي):')||'').trim();
- if(!d||!why)return toast('أدخل كمية وسببًا',1);
- await runTransaction(db,async t=>{
-  const r=doc(db,'products',id),p=(await t.get(r)).data(),n=p.stock+d;if(n<0)throw Error('لا يمكن أن يصبح الرصيد سالبًا');
-  t.update(r,{stock:n,updatedAt:serverTimestamp()});t.update(doc(db,'catalog',id),{inStock:n>0});
-  t.set(doc(collection(db,'movements')),{pid:id,name:p.name,type:'تسوية',qty:d,ref:why.slice(0,100),by:me.username,createdAt:serverTimestamp()});
- });
- toast('سُجلت الحركة');prodsPage(1);
-});
-function exp(){const c='\ufeffSKU,الاسم,التكلفة,البيع,الرصيد\n'+prods.map(p=>[p.sku,p.name,p.costPrice,p.sellPrice,p.stock].map(x=>'"'+String(x).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"').join(',')).join('\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download='products.csv';a.click()}
+    <!-- Modal & Print Containers -->
+    <div id="modalContainer" class="hidden"></div>
+    <div id="printArea" class="hidden"></div>
 
-/* فواتير المبيعات والمرتجعات */
-async function sales(){
- sl2=(await getDocs(query(collection(db,'sales'),orderBy('createdAt','desc'),limit(100)))).docs.map(d=>({id:d.id,...d.data()}));
- $('#v').innerHTML=`<div class="card"><input id="sq3" placeholder="بحث برقم الفاتورة أو اسم العميل" oninput="sf()"><small>آخر 100 فاتورة</small></div><div class="card tw" id="st"></div>`;sf();
-}
-function sf(){const k=$('#sq3').value.trim().toLowerCase();$('#st').innerHTML='<table><tr><th>الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الصافي</th><th>المتبقي</th><th>الموظف</th><th></th></tr>'+sl2.filter(x=>!k||(x.invoiceNo+' '+(x.customer||'')).toLowerCase().includes(k)).map(x=>`<tr><td>${esc(x.invoiceNo)}</td><td>${esc(x.day)}</td><td>${esc(x.customer||'—')}</td><td>${money(x.total)}</td><td>${money(x.remaining)}</td><td>${esc(x.by)}</td><td><button class="o" onclick="sd2('${esc(x.id)}')">عرض</button></td></tr>`).join('')+'</table>'}
-function sd2(id){const x=sl2.find(z=>z.id===id),rt=x.returned||{};
- modal(`<div><h3>مكتبة أنس للمستلزمات العصرية — ${esc(x.invoiceNo)}</h3><small>${esc(x.day)} • ${esc(x.by)} ${x.customer?'• '+esc(x.customer):''}</small><div class="tw"><table><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}${rt[i.id]?` <small>(مرتجع ${rt[i.id]})</small>`:''}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.qty*i.price)}</td></tr>`).join('')}</table></div><p>قبل الخصم: ${money(x.subtotal)} • الخصم: ${money(x.discount)}<br><b>الصافي: ${money(x.total)}</b><br>المدفوع: ${money(x.paid)} • المتبقي: ${money(x.remaining)}</p></div><button onclick="print()">🖨 طباعة</button> <button class="o" onclick="rf('${esc(id)}')">↩ مرتجع</button> <button class="o" onclick="closeM()">إغلاق</button>`)}
-function rf(id){const x=sl2.find(z=>z.id===id),rt=x.returned||{};
- modal(`<h3>مرتجع على ${esc(x.invoiceNo)}</h3>${x.items.map((i,k)=>{const m=i.qty-(rt[i.id]||0);return`<div style="display:flex;gap:8px;align-items:center;margin:6px 0"><span style="flex:1">${esc(i.name)} <small>(المتاح للإرجاع ${m})</small></span><input id="rq${k}" type="number" min="0" max="${m}" value="0" style="width:80px" ${m?'':'disabled'}></div>`}).join('')}<p><small>يُخصم أولًا من المبلغ المتبقي على الفاتورة، وما زاد يُرد نقدًا من الخزينة.</small></p><button id="rb" onclick="doRet('${esc(id)}')">تأكيد المرتجع</button> <button class="o" onclick="closeM()">إلغاء</button>`)}
-const doRet=wrap(async id=>{
- const x=sl2.find(z=>z.id===id),ln=x.items.map((i,k)=>({i,q:parseInt($('#rq'+k).value)||0})).filter(l=>l.q>0);
- if(!ln.length)return toast('حدد كمية للإرجاع',1);
- const b=$('#rb');b.disabled=true;
- try{await runTransaction(db,async t=>{
-  const sr=doc(db,'sales',id),s=(await t.get(sr)).data(),rt={...(s.returned||{})},ps=[];
-  for(const l of ln){const left=s.items.find(z=>z.id===l.i.id).qty-(rt[l.i.id]||0);if(l.q>left)throw Error('كمية المرتجع أكبر من المسموح: '+l.i.name);const pr=doc(db,'products',l.i.id);ps.push({l,pr,p:(await t.get(pr)).data()})}
-  const cr=s.custId?doc(db,'customers',s.custId):null,cd=cr?(await t.get(cr)).data():null;
-  const val=r2(ln.reduce((a,l)=>a+l.q*l.i.price,0)*(s.subtotal?s.total/s.subtotal:1)),nrem=r2(Math.max(0,s.remaining-val)),cash=r2(val-(s.remaining-nrem));
-  ln.forEach(l=>rt[l.i.id]=(rt[l.i.id]||0)+l.q);
-  t.update(sr,{returned:rt,remaining:nrem});
-  if(cd&&s.remaining>nrem){const dlt=r2(s.remaining-nrem);t.update(cr,{balance:r2(cd.balance-dlt)});t.set(doc(collection(db,'ledger')),{party:'c',pid:s.custId,type:'مرتجع',amount:-dlt,ref:s.invoiceNo,day:day(),by:me.username,createdAt:serverTimestamp()})}
-  t.set(doc(collection(db,'returns')),{saleId:id,invoiceNo:s.invoiceNo,items:ln.map(l=>({id:l.i.id,name:l.i.name,qty:l.q,price:l.i.price,cost:l.i.cost})),value:val,cashOut:cash,day:day(),by:me.username,createdAt:serverTimestamp()});
-  for(const z of ps){t.update(z.pr,{stock:z.p.stock+z.l.q,updatedAt:serverTimestamp()});t.update(doc(db,'catalog',z.pr.id),{inStock:true});t.set(doc(collection(db,'movements')),{pid:z.pr.id,name:z.p.name,type:'مرتجع مبيعات',qty:z.l.q,ref:s.invoiceNo,by:me.username,createdAt:serverTimestamp()})}
-  if(cash>0)t.set(doc(collection(db,'cash')),{type:'مرتجع',amount:cash,dir:'out',ref:s.invoiceNo,by:me.username,createdAt:serverTimestamp()});
- });pT=0}finally{b.disabled=false}
- closeM();toast('✅ تم تسجيل المرتجع وتحديث المخزون والخزينة');sales();
-});
-
-/* الموردون والعملاء والمشتريات */
-async function partyPage(k){
- const L=(await getDocs(collection(db,k))).docs.map(d=>({id:d.id,...d.data()})),C=k==='customers',tot=r2(L.reduce((a,x)=>a+x.balance,0));
- $('#v').innerHTML=`<div class="card"><h3>${C?'عميل جديد':'مورد جديد'}</h3><input id="xn" maxlength="80" placeholder="الاسم"><input id="xp" maxlength="20" placeholder="الهاتف"><button onclick="addParty('${k}')">إضافة</button></div><div class="card tw"><h3>${C?'مستحق على العملاء':'مستحق للموردين'}: ${money(tot)}</h3><table><tr><th>الاسم</th><th>الهاتف</th><th>الرصيد</th><th></th></tr>${L.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${money(x.balance)}</td><td><button class="o" onclick="payParty('${k}','${esc(x.id)}')">${C?'تحصيل':'سداد'}</button> <button class="o" onclick="stmt('${k}','${esc(x.id)}')">كشف حساب</button></td></tr>`).join('')}</table></div>`;
-}
-const addParty=wrap(async k=>{
- const name=$('#xn').value.trim();if(!name)return toast('أدخل الاسم',1);
- if(!(await getDocs(query(collection(db,k),where('name','==',name),limit(1)))).empty)return toast('الاسم مسجل مسبقًا',1);
- await setDoc(doc(collection(db,k)),{name,phone:$('#xp').value.trim(),balance:0,createdAt:serverTimestamp()});toast('تمت الإضافة');partyPage(k);
-});
-const payParty=wrap(async(k,id)=>{
- const C=k==='customers',a=r2(parseFloat(prompt(C?'مبلغ التحصيل:':'مبلغ السداد:')));if(!(a>0))return;
- await runTransaction(db,async t=>{
-  const r=doc(db,k,id),x=(await t.get(r)).data();if(a>x.balance)throw Error('المبلغ أكبر من الرصيد المستحق ('+x.balance+')');
-  t.update(r,{balance:r2(x.balance-a)});
-  t.set(doc(collection(db,'cash')),{type:C?'تحصيل عميل':'سداد مورد',amount:a,dir:C?'in':'out',ref:x.name.slice(0,40),by:me.username,createdAt:serverTimestamp()});
-  t.set(doc(collection(db,'ledger')),{party:C?'c':'s',pid:id,type:C?'تحصيل':'سداد',amount:-a,ref:'',day:day(),by:me.username,createdAt:serverTimestamp()});
- });toast('تم التسجيل');partyPage(k);
-});
-const stmt=wrap(async(k,id)=>{
- const s=await getDocs(query(collection(db,'ledger'),where('party','==',k==='customers'?'c':'s'),where('pid','==',id)));
- const L=s.docs.map(d=>d.data()).sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));let bal=0;
- modal(`<h3>كشف حساب</h3><div class="tw"><table><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>الرصيد</th></tr>${L.map(x=>{bal=r2(bal+x.amount);return`<tr><td>${esc(x.day)}</td><td>${esc(x.type)} ${esc(x.ref)}</td><td>${money(x.amount)}</td><td>${money(bal)}</td></tr>`}).join('')}</table></div><button onclick="print()">🖨 طباعة</button> <button class="o" onclick="closeM()">إغلاق</button>`);
-});
-async function pur(){
- await loadProds();sups=(await getDocs(collection(db,'suppliers'))).docs.map(d=>({id:d.id,...d.data()}));
- const h=(await getDocs(query(collection(db,'purchases'),orderBy('createdAt','desc'),limit(30)))).docs.map(d=>d.data());
- $('#v').innerHTML=`<div class="card"><h3>فاتورة مشتريات جديدة</h3><input id="pq" placeholder="ابحث عن صنف لإضافته" oninput="ql()"><div id="qpl" class="grid"></div><div id="qpc"></div><select id="psu"><option value="">اختر المورد (مطلوب عند وجود متبقٍ)</option>${sups.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</select><input id="ppd" type="number" min="0" placeholder="المدفوع الآن (للمدير فقط)" ${me.role==='admin'?'':'disabled'}><h3 id="ptt"></h3><button id="pb" onclick="savePur()">اعتماد الاستلام</button></div><div class="card tw"><h3>آخر الفواتير</h3><table><tr><th>الرقم</th><th>التاريخ</th><th>الإجمالي</th><th>المتبقي</th><th>بواسطة</th></tr>${h.map(x=>`<tr><td>${esc(x.no)}</td><td>${esc(x.day)}</td><td>${money(x.total)}</td><td>${money(x.remaining)}</td><td>${esc(x.by)}</td></tr>`).join('')}</table></div>`;qc();
-}
-function ql(){const s=($('#pq').value||'').trim().toLowerCase();$('#qpl').innerHTML=!s?'':prods.filter(p=>[p.name,p.sku,p.barcode].some(x=>String(x||'').toLowerCase().includes(s))).slice(0,12).map(p=>`<button class="o" onclick="qa('${esc(p.id)}')">${esc(p.name)}</button>`).join('')}
-function qa(id){const l=pcart.find(x=>x.id===id),p=prods.find(x=>x.id===id);l?l.qty++:pcart.push({id,qty:1,cost:p.costPrice||0});qc()}
-function qu(i,f,v){pcart[i][f]=f==='qty'?Math.max(1,parseInt(v)||1):Math.max(0,+v||0);qt()}
-function qc(){$('#qpc').innerHTML=pcart.map((l,i)=>`<div style="display:flex;gap:6px;align-items:center;margin:4px 0"><span style="flex:1">${esc(prods.find(x=>x.id===l.id).name)}</span><input type="number" min="1" value="${l.qty}" style="width:70px" onchange="qu(${i},'qty',this.value)"><input type="number" min="0" step="0.01" value="${l.cost}" style="width:90px" onchange="qu(${i},'cost',this.value)"><button class="r" onclick="pcart.splice(${i},1);qc()">✕</button></div>`).join('')||'<small>لم تُضف أصناف (الكمية ثم سعر الوحدة)</small>';qt()}
-function qt(){$('#ptt').textContent='الإجمالي: '+money(pcart.reduce((a,l)=>a+l.qty*l.cost,0))}
-const savePur=wrap(async()=>{
- if(!pcart.length)return toast('أضف صنفًا واحدًا على الأقل',1);
- const sid=$('#psu').value,paidIn=me.role==='admin'?(+$('#ppd').value||0):0,b=$('#pb');b.disabled=true;
- try{const no=await runTransaction(db,async t=>{
-  const pr=doc(db,'purchases',pKey),ex=await t.get(pr);if(ex.exists())return ex.data().no;
-  const cr=doc(db,'meta','pcounter'),cs=await t.get(cr),no='PUR-'+((cs.exists()?cs.data().n:100)+1),m={},L=[];let total=0;
-  pcart.forEach(l=>{m[l.id]=m[l.id]||{q:0,v:0};m[l.id].q+=l.qty;m[l.id].v+=l.qty*l.cost});
-  for(const[id,x]of Object.entries(m)){const r=doc(db,'products',id),p=(await t.get(r)).data();if(!p)throw Error('منتج غير موجود');L.push({r,p,q:x.q,c:r2(x.v/x.q)});total+=x.v}
-  total=r2(total);const paid=r2(Math.min(paidIn,total)),rem=r2(total-paid);let sr=null,sd=null;
-  if(rem>0){if(!sid)throw Error('اختر المورد لتسجيل المتبقي');sr=doc(db,'suppliers',sid);sd=(await t.get(sr)).data();if(!sd)throw Error('المورد غير موجود')}
-  t.set(cr,{n:+no.slice(4)},{merge:true});
-  t.set(pr,{no,supplierId:sid,items:L.map(x=>({id:x.r.id,name:x.p.name,qty:x.q,cost:x.c})),total,paid,remaining:rem,day:day(),by:me.username,createdAt:serverTimestamp()});
-  for(const x of L){const ns=x.p.stock+x.q,avg=r2((x.p.stock*x.p.costPrice+x.q*x.c)/ns);
-   t.update(x.r,{stock:ns,costPrice:avg,updatedAt:serverTimestamp()});t.update(doc(db,'catalog',x.r.id),{inStock:true});
-   t.set(doc(collection(db,'movements')),{pid:x.r.id,name:x.p.name,type:'وارد مشتريات',qty:x.q,ref:no,by:me.username,createdAt:serverTimestamp()})}
-  if(paid>0)t.set(doc(collection(db,'cash')),{type:'سداد مشتريات',amount:paid,dir:'out',ref:no,by:me.username,createdAt:serverTimestamp()});
-  if(sr&&rem>0){t.update(sr,{balance:r2(sd.balance+rem)});t.set(doc(collection(db,'ledger')),{party:'s',pid:sid,type:'فاتورة مشتريات',amount:rem,ref:no,day:day(),by:me.username,createdAt:serverTimestamp()})}
-  return no});
-  pcart.length=0;pKey=uuid();pT=0;toast('✅ تم اعتماد '+no+' وتحديث المخزون والتكلفة');pur();
- }finally{b.disabled=false}
-});
-
-/* التقارير */
-let RR=[];
-const tbl=(h,r)=>{RR=[h,...r];return'<table><tr>'+h.map(x=>`<th>${esc(x)}</th>`).join('')+'</tr>'+r.map(x=>'<tr>'+x.map(c=>`<td>${esc(c)}</td>`).join('')+'</tr>').join('')+'</table>'};
-const Qr=(c,a,b)=>getDocs(query(collection(db,c),where('day','>=',a),where('day','<=',b))).then(s=>s.docs.map(d=>d.data()));
-const sm=(L,f)=>r2(L.reduce((a,x)=>a+f(x),0)),cogs=L=>sm(L,x=>x.items.reduce((q,i)=>q+i.cost*i.qty,0));
-async function repPage(){
- const T=[['sales','تقرير المبيعات'],['profit','تقرير الأرباح'],['purch','تقرير المشتريات'],['exp','تقرير المصروفات'],['best','المنتجات الأكثر مبيعًا'],['dorm','المنتجات الراكدة'],['stock','المخزون الحالي وقيمته'],['low','منخفض المخزون وغير المتاح'],['emp','أداء الموظفين'],['ord','الطلبات الخارجية']];
- $('#v').innerHTML=`<div class="card"><select id="rt">${T.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('')}</select>من <input type="date" id="rf1" value="${day().slice(0,8)}01"> إلى <input type="date" id="rf2" value="${day()}"><button onclick="repRun()">عرض</button> <button class="o" onclick="repCsv()">📥 تصدير CSV</button></div><div class="card tw" id="ro">اختر التقرير والفترة ثم اضغط عرض</div>`;
-}
-const repRun=wrap(async()=>{
- const t=$('#rt').value,a=$('#rf1').value,b=$('#rf2').value;if(!a||!b||a>b)return toast('تحقق من التاريخين',1);
- $('#ro').textContent='جارٍ التحميل…';let h='';
- if(t==='sales'){const S=await Qr('sales',a,b);h=tbl(['الفاتورة','التاريخ','العميل','الإجمالي','الخصم','المدفوع','المتبقي','الموظف'],S.map(x=>[x.invoiceNo,x.day,x.customer||'نقدي',x.total,x.discount,x.paid,x.remaining,x.by]))+`<p>${S.length} فاتورة • إجمالي ${money(sm(S,x=>x.total))}</p>`}
- if(t==='profit'){const[S,R,E]=await Promise.all([Qr('sales',a,b),Qr('returns',a,b),Qr('expenses',a,b)]);
-  const gs=sm(S,x=>x.subtotal),ds=sm(S,x=>x.discount),rv=sm(R,x=>x.value),cost=r2(cogs(S)-cogs(R)),ex=sm(E,x=>x.amount),net=r2(gs-ds-rv),gp=r2(net-cost);
-  h=tbl(['البند','القيمة'],[['إجمالي المبيعات قبل الخصم',money(gs)],['الخصومات',money(ds)],['المرتجعات',money(rv)],['صافي المبيعات',money(net)],['تكلفة البضاعة المباعة (بعد المرتجعات)',money(cost)],['مجمل الربح',money(gp)],['المصروفات',money(ex)],['صافي الربح التقديري',money(r2(gp-ex))]])+'<small>التكلفة بمتوسط التكلفة وقت البيع، ولا تُعد مشتريات المخزون المتبقي مصروفًا.</small>'}
- if(t==='purch'){const P=await Qr('purchases',a,b);h=tbl(['الرقم','التاريخ','الإجمالي','المدفوع','المتبقي','بواسطة'],P.map(x=>[x.no,x.day,x.total,x.paid,x.remaining,x.by]))}
- if(t==='exp'){const E=await Qr('expenses',a,b),m={};E.forEach(x=>m[x.cat]=(m[x.cat]||0)+x.amount);h=tbl(['النوع','القيمة'],Object.entries(m).map(([k,v])=>[k,money(v)]))+`<p>الإجمالي ${money(sm(E,x=>x.amount))}</p>`}
- if(t==='best'||t==='dorm'){const S=await Qr('sales',a,b),m={};S.forEach(x=>x.items.forEach(i=>{m[i.id]=m[i.id]||{n:i.name,q:0,v:0};m[i.id].q+=i.qty;m[i.id].v+=i.qty*i.price}));
-  if(t==='best')h=tbl(['المنتج','الكمية المباعة','قيمة المبيعات'],Object.values(m).sort((x,y)=>y.q-x.q).slice(0,30).map(x=>[x.n,x.q,money(x.v)]));
-  else{await loadProds();h=tbl(['المنتج','الكود','الرصيد'],prods.filter(p=>p.active&&p.stock>0&&!m[p.id]).map(p=>[p.name,p.sku,p.stock]))+'<small>منتجات لها رصيد ولم تُبَع في الفترة.</small>'}}
- if(t==='stock'){await loadProds();h=tbl(['المنتج','الكود','الرصيد','التكلفة','القيمة'],prods.filter(p=>p.active).map(p=>[p.name,p.sku,p.stock,p.costPrice,r2(p.stock*p.costPrice)]))+`<p>قيمة المخزون بالتكلفة: ${money(sm(prods.filter(p=>p.active),p=>p.stock*p.costPrice))}</p>`}
- if(t==='low'){await loadProds();h=tbl(['المنتج','الكود','الرصيد','حد التنبيه'],prods.filter(p=>p.active&&p.stock<=p.minStock).map(p=>[p.name,p.sku,p.stock,p.minStock]))}
- if(t==='emp'){const S=await Qr('sales',a,b),m={};S.forEach(x=>{m[x.by]=m[x.by]||{n:0,v:0};m[x.by].n++;m[x.by].v+=x.total});h=tbl(['الموظف','عدد الفواتير','الإجمالي'],Object.entries(m).map(([k,v])=>[k,v.n,money(v.v)]))}
- if(t==='ord'){const O=await Qr('orders',a,b),m={};O.forEach(x=>m[x.status]=(m[x.status]||0)+1);h=tbl(['الحالة','العدد'],Object.entries(m))+`<p>إجمالي الطلبات ${O.length}</p>`}
- $('#ro').innerHTML=h||'لا توجد بيانات';
-});
-function repCsv(){if(!RR.length)return toast('اعرض تقريرًا أولًا',1);
- const c='\ufeff'+RR.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"').join(',')).join('\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download='report.csv';a.click()}
-
-/* النسخ الاحتياطي */
-const BK=['products','catalog','customers','suppliers','sales','purchases','returns','expenses','cash','movements','ledger','orders','users'];
-async function bakPage(){
- const l=await getDoc(doc(db,'meta','backup')).catch(()=>null);
- $('#v').innerHTML=`<div class="card"><h3>نسخة احتياطية</h3><p>آخر نسخة ناجحة: <b>${l?.exists()?esc(l.data().at.toDate().toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})):'لم تُنشأ بعد'}</b></p><button id="bb" onclick="doBak()">⬇ إنشاء وتنزيل نسخة (JSON)</button><p><small>تُنزَّل على جهازك. احفظها في مكان آمن. الاستعادة تتم حاليًا من لوحة Firebase وليس من التطبيق.</small></p></div>`;
-}
-const doBak=wrap(async()=>{
- const b=$('#bb');b.disabled=true;
- try{const o={app:'anas-library',at:new Date().toISOString()};
-  for(const c of BK)o[c]=(await getDocs(collection(db,c))).docs.map(d=>({id:d.id,...d.data()}));
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,(k,v)=>v&&v.toDate?v.toDate().toISOString():v)],{type:'application/json'}));a.download='anas-backup-'+day()+'.json';a.click();
-  await setDoc(doc(db,'meta','backup'),{at:serverTimestamp(),by:me.username});toast('✅ تم إنشاء النسخة');bakPage();
- }finally{b.disabled=false}
-});
-
-/* المصروفات والخزينة */
-const EC=['إيجار','كهرباء ومياه','أجور ومرتبات','نقل وشحن','صيانة','مصروفات تشغيلية أخرى'];
-const tm=d=>d.createdAt?.toDate().toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})||'';
-async function expnPage(){
- const s=await getDocs(query(collection(db,'expenses'),orderBy('createdAt','desc'),limit(50)));
- $('#v').innerHTML=`<div class="card"><h3>تسجيل مصروف (يُخصم من الخزينة نقدًا)</h3><select id="ec">${EC.map(c=>`<option>${c}</option>`).join('')}</select><input id="ea" type="number" min="0.01" step="0.01" placeholder="القيمة"><input id="en" maxlength="150" placeholder="ملاحظات"><button id="eb" onclick="saveExp()">حفظ</button></div><div class="card tw"><table><tr><th>التاريخ</th><th>النوع</th><th>القيمة</th><th>ملاحظات</th><th>بواسطة</th></tr>${s.docs.map(d=>{const x=d.data();return`<tr><td>${esc(tm(x))}</td><td>${esc(x.cat)}</td><td>${money(x.amount)}</td><td>${esc(x.note)}</td><td>${esc(x.by)}</td></tr>`}).join('')}</table></div>`;
-}
-const saveExp=wrap(async()=>{
- const a=r2(+$('#ea').value);if(!(a>0))return toast('أدخل قيمة صحيحة',1);
- const b=$('#eb');b.disabled=true;
- try{const w=writeBatch(db);
-  w.set(doc(collection(db,'expenses')),{cat:$('#ec').value,amount:a,note:$('#en').value.trim(),day:day(),by:me.username,createdAt:serverTimestamp()});
-  w.set(doc(collection(db,'cash')),{type:'مصروف',amount:a,dir:'out',ref:'EXP',by:me.username,createdAt:serverTimestamp()});
-  await w.commit();toast('تم تسجيل المصروف');expnPage()}finally{b.disabled=false}
-});
-async function cashPage(){
- const T=dir=>getAggregateFromServer(query(collection(db,'cash'),where('dir','==',dir)),{t:sum('amount')}).then(r=>r.data().t||0);
- const [i,o,s]=await Promise.all([T('in'),T('out'),getDocs(query(collection(db,'cash'),orderBy('createdAt','desc'),limit(100)))]);
- $('#v').innerHTML=`<div class="grid"><div class="card"><small>إجمالي المقبوضات</small><h3>${money(i)}</h3></div><div class="card"><small>إجمالي المدفوعات</small><h3>${money(o)}</h3></div><div class="card"><small>الرصيد الحالي</small><h3>${money(i-o)}</h3></div></div><p><small>الرصيد = كل ما سُجّل منذ بداية استخدام النظام (بدون رصيد افتتاحي). المبيعات الآجلة لا تدخل الخزينة إلا عند تحصيلها.</small></p><div class="card tw"><h3>آخر 100 حركة</h3><table><tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>المرجع</th><th>بواسطة</th></tr>${s.docs.map(d=>{const x=d.data();return`<tr><td>${esc(tm(x))}</td><td>${esc(x.type)}</td><td style="color:${x.dir==='in'?'var(--s)':'var(--d)'}">${x.dir==='in'?'+':'−'}${money(x.amount)}</td><td>${esc(x.ref)}</td><td>${esc(x.by)}</td></tr>`}).join('')}</table></div>`;
-}
-
-/* استيراد المنتجات من CSV (للمدير فقط، بدون تكرار: الكود الموجود يُتخطى) */
-function csv(t){const R=[];let r=[],c='',q=0;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=h}else if(h=='"')q=1;else if(h==','){r.push(c);c=''}else if(h=='\n'||h=='\r'){if(h=='\r'&&t[i+1]=='\n')i++;r.push(c);c='';if(r.length>1||r[0]!=='')R.push(r);r=[]}else c+=h}if(c!==''||r.length){r.push(c);R.push(r)}return R}
-async function imp(){$('#v').innerHTML=`<div class="card"><h3>استيراد المنتجات من ملف CSV</h3><p><small>الأعمدة: sku,name,barcode,category,cost,price,stock,minStock,active,show. أي منتج كوده موجود مسبقًا يُتخطى فلا يتكرر، ويُسجَّل الرصيد كحركة «رصيد افتتاحي».</small></p><input type="file" id="fi" accept=".csv"><button id="ib" onclick="doImp()">بدء الاستيراد</button><p id="ir"></p></div>`}
-const doImp=wrap(async()=>{
- const f=$('#fi').files[0];if(!f)return toast('اختر الملف أولًا',1);
- const rows=csv((await f.text()).replace(/^\ufeff/,'')),h=rows.shift().map(x=>x.trim()),g=(r,k)=>(r[h.indexOf(k)]||'').trim();
- const have=new Set((await getDocs(collection(db,'products'))).docs.map(d=>d.id)),todo=[],seen=new Set();let skip=0,bad=0;
- for(const r of rows){const sku=g(r,'sku'),id=sku.toLowerCase();if(!/^[A-Za-z0-9_-]{2,30}$/.test(sku)||!g(r,'name')){bad++;continue}if(have.has(id)||seen.has(id)){skip++;continue}seen.add(id);todo.push({id,sku,r})}
- if(!todo.length)return $('#ir').textContent=`لا جديد للاستيراد. متخطى: ${skip}، مرفوض: ${bad}`;
- if(!confirm(`سيتم استيراد ${todo.length} منتجًا جديدًا. متابعة؟`))return;
- const b0=$('#ib');b0.disabled=true;let done=0;
- try{for(let i=0;i<todo.length;i+=150){const b=writeBatch(db);
-  for(const{id,sku,r}of todo.slice(i,i+150)){const name=g(r,'name').slice(0,100),cost=Math.max(0,+g(r,'cost')||0),price=Math.max(0,+g(r,'price')||0),stock=Math.max(0,parseInt(g(r,'stock'))||0),act=g(r,'active')==='1'&&price>0,show=act&&g(r,'show')==='1',cat=g(r,'category');
-   b.set(doc(db,'products',id),{name,sku,barcode:g(r,'barcode'),costPrice:cost,sellPrice:price,minStock:parseInt(g(r,'minStock'))||5,cat,desc:'',active:act,show,stock,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-   b.set(doc(db,'catalog',id),{name,price,desc:'',cat,show,inStock:stock>0});
-   if(stock>0)b.set(doc(db,'movements','open-'+id),{pid:id,name,type:'رصيد افتتاحي',qty:stock,ref:'استيراد CSV',by:me.username,createdAt:serverTimestamp()});}
-  await b.commit();done=Math.min(i+150,todo.length);$('#ir').textContent=`تم ${done} من ${todo.length}…`}
-  $('#ir').textContent=`✅ اكتمل: أُضيف ${done}، متخطى (موجود) ${skip}، مرفوض ${bad}`;pT=0;
- }catch(e){$('#ir').textContent=`توقف الاستيراد بعد ${done} منتج. أعد التشغيل وسيُكمل دون تكرار.`;throw e}finally{b0.disabled=false}
-});
-
-/* المستخدمون */
-async function users(){
- const s=await getDocs(collection(db,'users'));
- $('#v').innerHTML=`<div class="card tw"><table><tr><th>المستخدم</th><th>الصلاحية</th></tr>${s.docs.map(d=>{const u=d.data();return`<tr><td>${esc(u.username)}</td><td>${d.id===me.uid?R[u.role]+' (أنت)':`<select onchange="setRole('${esc(d.id)}',this.value)">${Object.keys(R).map(k=>`<option value="${k}" ${k===u.role?'selected':''}>${R[k]}</option>`).join('')}</select>`}</td></tr>`}).join('')}</table><small>لتعطيل حساب اختر «بانتظار التفعيل».</small></div>`;
-}
-const setRole=wrap(async(uid,r)=>{await updateDoc(doc(db,'users',uid),{role:r});toast('تم تحديث الصلاحية')});
-
-Object.assign(window,{sv,sq2,sd,sa,send,trk,authView,login,signup,out,tg,go,pl,pe,pa,pq,pc,pt,checkout,ost,ocv,pf,sp,adj,exp,setRole,doImp,repRun,repCsv,doBak,pcart,ql,qa,qu,savePur,addParty,payParty,stmt,sf,sd2,rf,doRet,saveExp,closeM,cart,get q(){return q},set q(v){q=v}});
-if(location.hash.startsWith('#admin')){onAuthStateChanged(auth,u=>{if(!signing)boot(u)})}else store();
-addEventListener('hashchange',()=>location.reload());
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
